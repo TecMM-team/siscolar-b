@@ -1,14 +1,15 @@
 import express, { type Application, type Request, type Response, Router } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import path from 'path'; // Para manejar rutas de archivos
-import YAML from 'yamljs'; // Para leer el archivo openapi.yaml
-import swaggerUi from 'swagger-ui-express'; // UI de documentación
+import path from 'path';
+import YAML from 'yamljs';
+import swaggerUi from 'swagger-ui-express';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { globalErrorHandler, AppError } from './middlewares/errorHandler'; // Importamos AppError para 404
+import { globalErrorHandler, AppError } from './middlewares/errorHandler';
 import fs from 'node:fs';
 import https from 'node:https';
+import { buildSuccessResponse, buildErrorResponse, buildPaginatedResponse } from './utils/responseBuilder';
 
 dotenv.config();
 
@@ -21,7 +22,6 @@ const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
 
 // 2. Configuración de Swagger
-// Cargamos el archivo YAML desde la carpeta docs (subimos un nivel desde src)
 const swaggerPath = path.join(__dirname, '../docs/openapi.yaml');
 let swaggerDocument;
 try {
@@ -49,10 +49,10 @@ const apiV1Router = Router();
 
 // Endpoint base de verificación
 apiV1Router.get('/', (req: Request, res: Response) => {
-  res.status(200).json({
+  res.status(200).json(buildSuccessResponse({
     message: 'API v1 funcionando correctamente',
     environment: isProduction ? 'Production' : 'Development'
-  });
+  }));
 });
 
 // Endpoint de prueba para errores (puedes borrarlo luego)
@@ -60,11 +60,40 @@ apiV1Router.get('/test-error', (req: Request, res: Response, next) => {
   next(new AppError('Simulación de error controlado', 400));
 });
 
+async function getItems(page: number, pageSize: number) {
+  const allItems = Array.from({ length: 50 }, (_, i) => ({ id: i + 1, name: `Item ${i + 1}` }));
+  const startIndex = (page - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const items = allItems.slice(startIndex, endIndex);
+  const totalItems = allItems.length;
+  return { items, totalItems };
+}
+
+apiV1Router.get('/items', async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const pageSize = parseInt(req.query.pageSize as string) || 10;
+
+    if (page < 1 || pageSize < 1) {
+      return res.status(400).json(buildErrorResponse(
+        "INVALID_PARAMETERS",
+        "Los parámetros 'page' y 'pageSize' deben ser números positivos."
+      ));
+    }
+
+    const { items, totalItems } = await getItems(page, pageSize);
+
+    res.status(200).json(buildPaginatedResponse(items, totalItems, page, pageSize));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    res.status(500).json(buildErrorResponse("INTERNAL_SERVER_ERROR", error.message));
+  }
+});
+
 // Montar el router en /api/v1
 app.use('/api/v1', apiV1Router);
 
 // 6. Manejo de Rutas No Encontradas (404)
-// Esto debe ir DESPUÉS de las rutas y ANTES del error handler global
 app.all('*path', (req: Request, res: Response, next) => {
   next(new AppError(`No se encontró la ruta ${req.originalUrl}`, 404));
 });
@@ -79,7 +108,6 @@ const startServer = async () => {
     console.log('✅ Conexión a Base de Datos exitosa');
 
     if (isProduction) {
-      // --- MODO PRODUCCIÓN (HTTPS) ---
       const keyPath = process.env.SSL_KEY_PATH;
       const certPath = process.env.SSL_CERT_PATH;
 
@@ -97,7 +125,6 @@ const startServer = async () => {
       });
 
     } else {
-      // --- MODO DESARROLLO (HTTP) ---
       app.listen(PORT, () => {
         console.log(`Servidor corriendo en http://localhost:${PORT}`);
         console.log(`Documentación: http://localhost:${PORT}/docs`);

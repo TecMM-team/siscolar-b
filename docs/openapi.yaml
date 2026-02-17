@@ -13,6 +13,8 @@ servers:
 tags:
   - name: General
     description: Endpoints de verificación y estado
+  - name: Items
+    description: Endpoints de ejemplo para items
   - name: Archivo
     description: Gestión documental (Próximamente)
 
@@ -36,32 +38,122 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /test-error:
+    get:
+      summary: Probar la respuesta de error estandarizada
+      tags:
+        - General
+      responses:
+        '400':
+          description: Error simulado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /items:
+    get:
+      summary: Obtener una lista paginada de items
+      tags:
+        - Items
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Número de página
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            default: 10
+          description: Tamaño de la página
+      responses:
+        '200':
+          description: Lista de items paginada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedItemsResponse'
+        '400':
+          description: Parámetros de consulta inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error de servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 # ----------------------------------------------------------------
 # DEFINICIÓN DE ESQUEMAS REUTILIZABLES
 # ----------------------------------------------------------------
 components:
   schemas:
+    # Esquema para un solo item
+    Item:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Item 1"
+
     # Esquema estándar de respuesta exitosa
     SuccessResponse:
       type: object
       properties:
-        message:
-          type: string
-          example: "Operación exitosa"
         data:
           type: object
           nullable: true
+        meta:
+          type: object
+          nullable: true
+          default: {}
+
+    # Esquema para respuestas paginadas
+    PaginatedItemsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Item'
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              example: 1
+            pageSize:
+              type: integer
+              example: 10
+            total:
+              type: integer
+              example: 50
+            totalPages:
+              type: integer
+              example: 5
     
-    # Esquema estándar de error (Coincide con tu globalErrorHandler)
+    # Esquema estándar de error
     ErrorResponse:
       type: object
       properties:
-        status:
-          type: string
-          example: "error"
-        statusCode:
-          type: integer
-          example: 500
-        message:
-          type: string
-          example: "Ocurrió un error inesperado"
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: "INTERNAL_SERVER_ERROR"
+            message:
+              type: string
+              example: "Ocurrió un error inesperado"
+            details:
+              type: object
+              nullable: true

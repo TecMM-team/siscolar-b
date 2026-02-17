@@ -255,6 +255,11 @@ model repositorio {
   auditoria  auditoria[]
   ubicacion  ubicacion[]
 
+  // New fields for Google Drive credentials
+  gdrive_access_token  String?    @db.Text
+  gdrive_refresh_token String?    @db.Text
+  gdrive_token_expiry  DateTime?
+
   @@unique([plantel_id, drive_id, carpeta_id], map: "uq_repositorio_plantel_drive_carpeta")
   @@index([plantel_id], map: "ix_repositorio_plantel_id")
   @@schema("archivo")
