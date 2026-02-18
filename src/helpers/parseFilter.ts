@@ -1,5 +1,3 @@
-import { Prisma } from '@prisma/client';
-
 /**
  * Convierte query params en un objeto 'where' para Prisma
  * y mantiene un registro de los filtros aplicados.
