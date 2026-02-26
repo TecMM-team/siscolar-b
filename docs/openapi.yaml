@@ -72,6 +72,32 @@ paths:
         '404':
           description: Repositorio no encontrado
 
+  /validacion-documental/validar:
+    post:
+      summary: Validar un documento PDF
+      description: Ejecuta el flujo de extracción y reglas de validación según el tipo documental.
+      tags:
+        - Validación Documental
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                archivo:
+                  type: string
+                  format: binary
+                claveDocumental:
+                  type: string
+                  example: "ACTA_NAC"
+      responses:
+        '200':
+          description: Resultado de la validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
 components:
   schemas:
     SuccessResponse:

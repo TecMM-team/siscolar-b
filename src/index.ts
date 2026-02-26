@@ -12,6 +12,7 @@ import { buildSuccessResponse, buildErrorResponse, buildPaginatedResponse } from
 import { sanitizeInputMiddleware } from './middlewares/sanitizeInput';
 import repositorioRoutes from './routes/repositorio.routes';
 import generalRoutes from './routes/general.routes';
+import validacionDocumentalRoutes from './routes/validacionDocumental.routes';
 
 dotenv.config();
 
@@ -51,6 +52,9 @@ apiV1Router.use('/', generalRoutes);
 
 // Rutas de Repositorios
 apiV1Router.use('/repositorios', repositorioRoutes);
+
+// Rutas de Validación Documental
+apiV1Router.use('/validacion-documental', validacionDocumentalRoutes);
 
 // Endpoint de prueba para errores (puedes borrarlo luego)
 apiV1Router.get('/test-error', (req: Request, res: Response, next) => {
