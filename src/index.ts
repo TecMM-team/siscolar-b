@@ -12,6 +12,7 @@ import { sanitizeInputMiddleware } from './middlewares/sanitizeInput';
 import repositorioRoutes from './routes/repositorio.routes';
 import generalRoutes from './routes/general.routes';
 import validacionDocumentalRoutes from './routes/validacionDocumental.routes';
+import ubicacionesRouter from './routes/ubicaciones'
 
 dotenv.config();
 
@@ -19,7 +20,7 @@ const app: Application = express();
 const PORT = process.env.PORT || 3050;
 const isProduction = process.env.NODE_ENV === 'production';
 
-// 1. Configuración de Swagger
+// 2. Configuración de Swagger
 const swaggerPath = path.join(__dirname, '../docs/openapi.yaml');
 let swaggerDocument;
 try {
@@ -62,6 +63,7 @@ apiV1Router.get('/test-error', (req: Request, res: Response, next) => {
 
 // Montar el router en /api/v1
 app.use('/api/v1', apiV1Router);
+app.use('/api/v1/ubicaciones', ubicacionesRouter);
 
 // 6. Manejo de Rutas No Encontradas (404)
 app.all('*path', (req: Request, res: Response, next) => {
