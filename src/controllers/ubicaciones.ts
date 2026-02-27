@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
-import { PrismaClient/*, Prisma */} from '@prisma/client';
-//import { getOrderBy } from './helpers/queryHelper'; // Tu helper de sort
-//import { getOrderBy } from '../helpers/parseOrder';
+//import { PrismaClient/*, Prisma */} from '@prisma/client';
+import prisma from '../config/db';
+
 
 export const getUbicaciones = async (req: Request, res: Response) => {
     try{
-        const prisma = req.app.get('prisma') as PrismaClient;
+        //const prisma = req.app.get('prisma') as PrismaClient;
 
         const ubicaciones = await prisma.ubicacion.findMany({});
 
@@ -20,7 +20,7 @@ export const getUbicaciones = async (req: Request, res: Response) => {
 export const getUbicacionesById = async (req: Request, res: Response) => {
     const {id} = req.params;
     try{
-        const prisma = req.app.get('prisma') as PrismaClient;
+        //const prisma = req.app.get('prisma') as PrismaClient;
 
         const ubicacion = await prisma.ubicacion.findUnique({
             where: {
@@ -37,7 +37,7 @@ export const getUbicacionesById = async (req: Request, res: Response) => {
 
 export const guardaUbicaciones = async (req: Request, res: Response) => {
     try{
-        const prisma = req.app.get('prisma') as PrismaClient;
+        //const prisma = req.app.get('prisma') as PrismaClient;
 
         const nuevaUbicacion = await prisma.ubicacion.create({
             data: req.body
@@ -55,7 +55,7 @@ export const actualizarUbicacion = async (req: Request, res: Response) => {
     try{
         //console.log(id);
         //console.log(req.body);
-        const prisma = req.app.get('prisma') as PrismaClient;
+        //const prisma = req.app.get('prisma') as PrismaClient;
         
         const ubicacionActualizada = await prisma.ubicacion.update({
             where: { id: Number(id) },
@@ -72,7 +72,7 @@ export const actualizarUbicacion = async (req: Request, res: Response) => {
 export const actualizarEstado = async (req:Request, res: Response) => {
     const {id} = req.params;
     try{
-        const prisma = req.app.get('prisma') as PrismaClient;
+        //const prisma = req.app.get('prisma') as PrismaClient;
 
         const ubicacionActualizada = await prisma.ubicacion.update({
             where: {id: Number(id)},

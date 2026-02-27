@@ -20,12 +20,6 @@ const app: Application = express();
 const PORT = process.env.PORT || 3050;
 const isProduction = process.env.NODE_ENV === 'production';
 
-// 1. Configuración de Prisma
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
-const prisma = new PrismaClient({ adapter });
-
-app.set('prisma', prisma);
-
 // 2. Configuración de Swagger
 const swaggerPath = path.join(__dirname, '../docs/openapi.yaml');
 let swaggerDocument;
